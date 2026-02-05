@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Player Unfurler</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 50px; background-color: #121212; color: white; }
+        #player-container { width: 100%; max-width: 500px; min-height: 80px; border-radius: 12px; overflow: hidden; background: #282828; margin-top: 20px; }
+        input { padding: 10px; width: 300px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; background: #1DB954; color: white; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; margin-left: 10px; }
+        button:hover { background: #1ed760; }
+        .loading { padding: 20px; text-align: center; color: #b3b3b3; }
+    </style>
+</head>
+<body>
+
+    <h2>Spotify Link Unfurler</h2>
+    <div>
+        <input type="text" id="spotify-url" placeholder="Paste spotify.link or open.spotify.com">
+        <button onclick="unfurlLink()">Unfurl</button>
+    </div>
+
+    <div id="player-container">
+        <div class="loading">Player will appear here...</div>
+    </div>
+
+    <script>
+        async function unfurlLink() {
+            const rawUrl = document.getElementById('spotify-url').value;
+            const container = document.getElementById('player-container');
+            
+            if (!rawUrl) return alert("Please paste a URL");
+
+            // 1. Encode the URL correctly
+            const encodedUrl = encodeURIComponent(rawUrl);
+            
+            // 2. Spotify's oEmbed Endpoint
+            const oEmbedEndpoint = `https://open.spotify.com/oembed?url=${encodedUrl}`;
+
+            container.innerHTML = '<div class="loading">Loading player...</div>';
+
+            try {
+                const response = await fetch(oEmbedEndpoint);
+                const data = await response.json();
+
+                if (data.html) {
+                    // 3. Inject the <iframe> (The "Unfurl")
+                    container.innerHTML = data.html;
+                } else {
+                    container.innerHTML = '<div class="loading">Could not load player.</div>';
+                }
+            } catch (error) {
+                console.error("Error fetching oEmbed:", error);
+                container.innerHTML = '<div class="loading">Error: Make sure the link is a valid Spotify track/album.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
